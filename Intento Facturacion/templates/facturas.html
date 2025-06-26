@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Facturas - Granimar CR{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-file-invoice me-2"></i>
+                Gestión de Facturas
+            </h1>
+            <a href="/nueva-factura" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nueva Factura
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros de Búsqueda -->
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+        </h6>
+    </div>
+    <div class="card-body">
+        <form id="form-filtros">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="filtro-nombre" class="form-label">Nombre del Cliente</label>
+                    <input type="text" class="form-control" id="filtro-nombre" placeholder="Buscar por nombre...">
+                </div>
+                <div class="col-md-3">
+                    <label for="filtro-email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="filtro-email" placeholder="Buscar por email...">
+                </div>
+                <div class="col-md-2">
+                    <label for="filtro-estado" class="form-label">Estado</label>
+                    <select class="form-select" id="filtro-estado">
+                        <option value="">Todos</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="ENVIADA">Enviada</option>
+                        <option value="PAGADA">Pagada</option>
+                        <option value="ANULADA">Anulada</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="filtro-fecha-desde" class="form-label">Desde</label>
+                    <input type="date" class="form-control" id="filtro-fecha-desde">
+                </div>
+                <div class="col-md-2">
+                    <label for="filtro-fecha-hasta" class="form-label">Hasta</label>
+                    <input type="date" class="form-control" id="filtro-fecha-hasta">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-2">
+                    <label for="filtro-color" class="form-label">Color</label>
+                    <input type="text" class="form-control" id="filtro-color" placeholder="Color...">
+                </div>
+                <div class="col-md-2">
+                    <label for="filtro-metros-min" class="form-label">m² Mínimos</label>
+                    <input type="number" step="0.01" class="form-control" id="filtro-metros-min" placeholder="0">
+                </div>
+                <div class="col-md-2">
+                    <label for="filtro-metros-max" class="form-label">m² Máximos</label>
+                    <input type="number" step="0.01" class="form-control" id="filtro-metros-max" placeholder="1000">
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary me-2" id="btn-buscar">
+                        <i class="fas fa-search me-2"></i>Buscar
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="btn-limpiar">
+                        <i class="fas fa-eraser me-2"></i>Limpiar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="small">Total Facturas</div>
+                        <div class="h4" id="stat-total-facturas">0</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-file-invoice fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="small">Total Ventas</div>
+                        <div class="h4" id="stat-total-ventas">₡0</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="small">Pendientes</div>
+                        <div class="h4" id="stat-pendientes">0</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="small">Promedio m²</div>
+                        <div class="h4" id="stat-promedio-metros">0</div>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-ruler fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Facturas -->
+<div class="card shadow">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="fas fa-list me-2"></i>Lista de Facturas
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="tabla-facturas">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Cliente</th>
+                        <th>Email</th>
+                        <th>Fecha</th>
+                        <th>m²</th>
+                        <th>Color</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Email</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="10" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        <nav aria-label="Paginación de facturas">
+            <ul class="pagination justify-content-center" id="paginacion">
+                <!-- Se llena dinámicamente -->
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Modal para Ver Factura -->
+<div class="modal fade" id="modal-ver-factura" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    Detalle de Factura
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="contenido-factura">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btn-enviar-email">
+                    <i class="fas fa-envelope me-2"></i>Enviar por Email
+                </button>
+                <button type="button" class="btn btn-info" id="btn-imprimir">
+                    <i class="fas fa-print me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Enviar Email -->
+<div class="modal fade" id="modal-enviar-email" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-envelope me-2"></i>
+                    Enviar Factura por Email
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-enviar-email">
+                    <div class="mb-3">
+                        <label for="email-adicional" class="form-label">Email Adicional (Opcional)</label>
+                        <input type="email" class="form-control" id="email-adicional" 
+                               placeholder="Email adicional para enviar copia">
+                    </div>
+                    <div class="mb-3">
+                        <label for="mensaje-personalizado" class="form-label">Mensaje Personalizado (Opcional)</label>
+                        <textarea class="form-control" id="mensaje-personalizado" rows="3" 
+                                  placeholder="Mensaje adicional para incluir en el email..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-confirmar-envio">
+                    <i class="fas fa-paper-plane me-2"></i>Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.badge-estado-pendiente {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge-estado-enviada {
+    background-color: #17a2b8;
+}
+
+.badge-estado-pagada {
+    background-color: #28a745;
+}
+
+.badge-estado-anulada {
+    background-color: #dc3545;
+}
+
+.email-status {
+    font-size: 0.8em;
+}
+
+.email-enviado {
+    color: #28a745;
+}
+
+.email-no-enviado {
+    color: #6c757d;
+}
+
+.factura-imagen {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/facturas.js"></script>
+{% endblock %}

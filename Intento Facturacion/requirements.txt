@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pyodbc
+python-multipart
+jinja2
+python-dotenv
+pydantic
+alembic
+fastapi-mail
+Pillow
+aiofiles
+reportlab
